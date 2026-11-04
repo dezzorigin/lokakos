@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* ── Global Reset ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Peta fullscreen — tidak ada scroll di level root */
+  background: #020617; /* bg-primary: slate-950 */
+  color: #f8fafc;      /* text-primary: slate-50 */
+  font-family: var(--font-inter, 'Inter', -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mapbox GL CSS sudah di-import di dalam MapContainer.tsx */
