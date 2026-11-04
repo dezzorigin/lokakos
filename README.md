@@ -1,15 +1,34 @@
 # Lokakos
 
-Lokakos project.
+Lokakos — project by Nabil Aulia Dika (dezzorigin).
 
-## Tech stack
+## Status Proyek
 
-Misc
+**Dalam pengembangan** _(README ada)_
 
-## Getting started
+## Tech Stack
 
-See project files for setup instructions.
+Node.js (subproject)
 
-## License
+## Struktur Proyek
 
-MIT
+```
+.gitignore
+README.md
+file /
+lokakos/
+```
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+## Lisensi
+
+MIT — lihat file [LICENSE](./LICENSE).
+
+---
+_Dibuat dan dikelola oleh Nabil Aulia Dika. Kontribusi dan issue welcome._
