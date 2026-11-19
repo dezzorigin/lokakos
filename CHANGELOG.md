@@ -1,40 +1,78 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+Semua perubahan penting di proyek ini dicatat di file ini.
+Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-The format is based on [Keep a Changelog](https://keepachangerot.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
+## [1.0.0] - 2026-11-19
 
 ### Added
-- Initial Next.js project setup for Lokakos
-- Vite integration for fast development
-- Page route management
-- Tailwind CSS configuration
-- TypeScript configuration
+- Landing (`/`) ala SaaS: hero editorial + peta live + daftar 8 kos + cara
+  kerja + fitur + footer; navbar dengan logo GitHub ke repo.
+- Aplikasi peta penuh (`/peta`): panel filter + daftar + peta + drawer detail.
+- Filter nyata (harga, fasilitas, tipe kos, favorit, pencarian) — menyaring
+  daftar dan marker peta sekaligus.
+- Favorit kos (localStorage, tanpa akun) + bagikan tautan deep-link
+  (`/peta?kos=<id>`).
+- Tombol "Lokasiku" (geolocation) di peta.
+- 4 kos contoh baru (prop-005–prop-008), total 8 kos di Darussalam / Kopelma.
+- CI 6 job (build, lint, static-checks, advisory-sweep OSV, Playwright e2e,
+  smoke) + skrip `scripts/` (check-links, check-static, screenshot,
+  make-video, smoke, advisory-sweep).
+- Docs lengkap: DESIGN.md (kontrak arah desain), architecture.md, data.md,
+  deploy.md, testing.md, diagrams.html (HTML+SVG).
+- Screenshot desktop + mobile + video demo (`docs/demo/demo.mp4`).
+- Deploy live Cloudflare Pages: https://lokakos.pages.dev.
 
 ### Changed
-- Updated Next.js and dependencies to latest stable versions
-- Improved TypeScript configuration
-- Enhanced Vite build performance
-- Optimized CSS for production
+- **Restructure:** isi subfolder `lokakos/` dipindah ke root repo (package.json,
+  src/, public, config naik ke root; subfolder lama dihapus dari tree).
+- **Peta diganti total:** Mapbox GL + react-map-gl → Leaflet + tile standar
+  OpenStreetMap (tanpa API key). Alasan: tidak ada token Mapbox di
+  repo dan tanpa token peta live blank. Tile CARTO Positron sempat dicoba dan
+  ditolak — servernya mengembalikan watermark "API KEY REQUIRED" tanpa key.
+- Semua gaya komponen dipusatkan di `src/app/globals.css` (sebelumnya ±1500
+  baris `<style>` tersebar di tiap komponen).
+- Font Inter → Fraunces + Public Sans (kontrak desain).
+- "Hubungi Pemilik" dihapus — data contoh tidak punya nomor pemilik; diganti
+  Simpan + Bagikan yang benar-benar jalan.
+- Tombol Masuk / Daftar dihapus — tidak ada auth; diganti navigasi + CTA
+  Buka Peta.
+- `next.config.ts`: `output: 'export'` untuk Cloudflare Pages.
 
 ### Fixed
-- Fixed TypeScript configuration errors
-- Fixed Vite build caching issues
-- Fixed page route matching bugs
+- Kontrol zoom Leaflet (z-index 1000) menutupi tombol tutup drawer, tombol
+  Lokasiku, dan ujung search bar di mobile — z-index drawer/search/locate
+  dinaikkan di atas kontrol Leaflet, tombol Lokasiku dipindah ke bawah
+  kontrol zoom (ditemukan saat play-test e2e).
+- Kartu kos di panel daftar mengecil terpotong (flex-shrink di kolom scroll
+  flex) — kartu tidak lagi menyusut (ditemukan saat review screenshot).
 
-### Security
-- Updated dependency versions to patch vulnerabilities
-- Fixed potential XSS vulnerabilities in components
-- Fixed environment variable exposure issues
+### Removed
+- `lokakos/app_backup_root/` (duplikat usang `src/app`).
+- `src/app/health/` (route handler tidak didukung static export).
+- `src/components/map/PropertyMarker.tsx` (khusus Mapbox).
+- `src/lib/mapbox/` (config token Mapbox).
+- SVG boilerplate create-next-app di `public/` (file.svg, globe.svg,
+  next.svg, vercel.svg, window.svg).
+- `lokakos/README.md` boilerplate create-next-app (README root ditulis ulang).
 
-## [1.0.0] - 2024-11-05
+### Moved
+- Folder `file /` (proposal bisnis docx + pdf, nama ber-spasi) → rapi ke
+  `docs/proposals/` dengan nama file bersih.
+- `lokakos/PLANNER.md` → `docs/PLANNER.md` (arsip; Mapbox + dark mode di
+  dalamnya sudah tidak berlaku).
+- `lokakos/AGENTS.md`, `lokakos/CLAUDE.md` → root.
+
+### Fixed
+- Filter chip yang sebelumnya hanya mengubah state lokal dan tidak memfilter
+  apa pun.
+- Search bar yang sebelumnya tidak dipasangkan (`onSearch` tidak pernah
+  dikirim dari halaman).
+- Konflik file saat restructure: README root (template repo) dipertahankan
+  dan ditulis ulang; README subfolder (boilerplate create-next-app) dihapus;
+  `.gitignore` root diganti versi Next.js dari subfolder (lebih lengkap).
+
+## [0.1.0] - 2026-11-05
 
 ### Added
-- Initial Lokakos project setup
-- Vite development server
-- TypeScript configuration
-- Tailwind CSS integration
-- Page route management
+- Scaffolding awal Next.js (Mapbox, 4 kos contoh, panel + drawer statis).
