@@ -4,19 +4,27 @@
  * src/components/property/PropertyDetail.tsx
  *
  * Panel detail properti — slide-in dari kanan saat marker / kartu diklik.
+ * Dataset jujur (PR #2): setiap kos menampilkan SUMBERNYA (nama + tautan
+ * listing asli + tanggal ambil). Field yang tidak ada di sumber ditampilkan
+ * apa adanya ("tidak tercatat"), bukan diisi karangan.
+ *
  * CTA yang benar-benar jalan:
  *  - "Simpan" -> favorit (localStorage), toggle.
- *  - "Bagikan" -> salin tautan /peta?kos=<id> ke clipboard (deep-link:
- *    membuka tautan itu langsung membuka detail kos ini).
- *
- * "Hubungi Pemilik" DIHAPUS: data contoh tidak punya nomor pemilik, dan
- * tombol tanpa aksi adalah cacat produk (standar anti-slop §5).
+ *  - "Bagikan" -> salin tautan /?kos=<id> ke clipboard (deep-link: membuka
+ *    tautan itu langsung membuka detail kos ini).
+ *  - "Hubungi" -> tel: ke nomor publik dari listing sumber (hanya muncul
+ *    kalau sumber mencantumkan nomor; nomor relay platform TIDAK dipakai).
  */
 
 import { useState } from 'react';
 import type { Property } from '@/types/property';
-import { formatPrice } from '@/lib/mockData';
-import { GENDER_LABELS, getOverallStatus, STATUS_CONFIG } from '@/lib/property';
+import { formatPrice, pricePeriodLabel } from '@/lib/format';
+import {
+  ACCURACY_LABELS,
+  GENDER_LABELS,
+  getOverallStatus,
+  STATUS_CONFIG,
+} from '@/lib/property';
 
 export interface PropertyDetailProps {
   property: Property;
@@ -37,7 +45,7 @@ export default function PropertyDetail({
   const genderCfg = GENDER_LABELS[property.genderType];
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/peta?kos=${property.id}`;
+    const url = `${window.location.origin}/?kos=${property.id}`;
     try {
       await navigator.clipboard.writeText(url);
     } catch {
@@ -55,6 +63,14 @@ export default function PropertyDetail({
 
   return (
     <aside className="detail-panel" role="complementary" aria-label="Detail properti">
+      {property.thumbnailUrl && (
+        <div className="detail-panel__photo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={property.thumbnailUrl} alt={`Foto ${property.name}`} loading="lazy" />
+          <span className="detail-panel__photo-note">Foto dari listing sumber</span>
+        </div>
+      )}
+
       <div className="detail-panel__header">
         <div className="detail-panel__header-top">
           <span
@@ -80,26 +96,50 @@ export default function PropertyDetail({
           <span className="detail-panel__tag">
             {genderCfg.mark} {genderCfg.label}
           </span>
-          <span className="detail-panel__tag">Darussalam, Banda Aceh</span>
+          {property.area && <span className="detail-panel__tag">{property.area}</span>}
+          {property.latitude == null && (
+            <span className="detail-panel__tag">Lokasi belum terpetakan</span>
+          )}
         </div>
       </div>
 
       <div className="detail-panel__price-section">
-        <span className="detail-panel__price-label">Mulai dari</span>
-        <span className="detail-panel__price num">
-          {formatPrice(property.priceMin)}
-          <span className="detail-panel__price-unit">/bln</span>
-        </span>
-        {property.priceMax && (
-          <span className="detail-panel__price-max num">
-            s/d {formatPrice(property.priceMax)} /bln
-          </span>
+        {property.priceMin != null ? (
+          <>
+            <span className="detail-panel__price-label">Mulai dari</span>
+            <span className="detail-panel__price num">
+              {formatPrice(property.priceMin)}
+              <span className="detail-panel__price-unit">
+                {pricePeriodLabel(property.pricePeriod)}
+              </span>
+            </span>
+            {property.priceMax && (
+              <span className="detail-panel__price-max num">
+                s/d {formatPrice(property.priceMax)} {pricePeriodLabel(property.pricePeriod)}
+              </span>
+            )}
+            {property.pricePeriod === 'yearly' && (
+              <span className="detail-panel__price-max">
+                Harga tahunan dari sumber — bukan per bulan.
+              </span>
+            )}
+          </>
+        ) : (
+          <>
+            <span className="detail-panel__price-label">Harga</span>
+            <span className="detail-panel__price detail-panel__price--none">
+              Tidak tercatat di sumber
+            </span>
+            <span className="detail-panel__price-max">
+              Listing sumber tidak mencantumkan harga — tanyakan langsung ke pemilik.
+            </span>
+          </>
         )}
       </div>
 
       {property.description && (
         <div className="detail-panel__section">
-          <h3 className="detail-panel__section-title">Deskripsi</h3>
+          <h3 className="detail-panel__section-title">Catatan harga</h3>
           <p className="detail-panel__description">{property.description}</p>
         </div>
       )}
@@ -114,6 +154,13 @@ export default function PropertyDetail({
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {property.roomsNote && (
+        <div className="detail-panel__section">
+          <h3 className="detail-panel__section-title">Catatan kamar</h3>
+          <p className="detail-panel__description">{property.roomsNote}</p>
         </div>
       )}
 
@@ -139,6 +186,28 @@ export default function PropertyDetail({
         </div>
       )}
 
+      <div className="detail-panel__section detail-panel__source">
+        <h3 className="detail-panel__section-title">Sumber data</h3>
+        <p className="detail-panel__description">
+          Data dari listing publik di <strong>{property.source}</strong>, dikumpulkan{' '}
+          {property.collectedAt}. Harga dan ketersediaan bisa berubah — cek listing
+          aslinya sebelum menghubungi.
+        </p>
+        <a
+          className="detail-panel__source-link"
+          href={property.sourceUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Lihat listing asli di {property.source} ↗
+        </a>
+        {property.coordinateAccuracy && (
+          <p className="detail-panel__accuracy">
+            {ACCURACY_LABELS[property.coordinateAccuracy] ?? ''}
+          </p>
+        )}
+      </div>
+
       <div className="detail-panel__cta">
         <button
           id="save-property-btn"
@@ -149,23 +218,53 @@ export default function PropertyDetail({
         >
           {isFavorite ? '♥ Tersimpan' : '♡ Simpan'}
         </button>
-        <button
-          id="share-property-btn"
-          type="button"
-          className="btn btn--primary"
-          onClick={handleShare}
-        >
-          Bagikan
-        </button>
+        {property.contactPhone ? (
+          <a
+            id="call-property-btn"
+            className="btn btn--primary"
+            href={`tel:${property.contactPhone.replace(/[^+0-9]/g, '')}`}
+          >
+            Hubungi {property.contactPhone}
+          </a>
+        ) : (
+          <button
+            id="share-property-btn"
+            type="button"
+            className="btn btn--primary"
+            onClick={handleShare}
+          >
+            Bagikan
+          </button>
+        )}
       </div>
+      {property.contactPhone && (
+        <div className="detail-panel__cta detail-panel__cta--second">
+          <button
+            id="share-property-btn"
+            type="button"
+            className="btn btn--ghost"
+            onClick={handleShare}
+          >
+            Bagikan
+          </button>
+        </div>
+      )}
       {copied && (
         <p className="detail-panel__copied" role="status">
           Tautan kos ini disalin — buka tautan itu untuk langsung melihat detailnya.
         </p>
       )}
-      <p className="detail-panel__sample">
-        Data contoh untuk demo — nama, harga, dan ketersediaan di atas bukan listing sungguhan.
-      </p>
+      {property.contactPhone ? (
+        <p className="detail-panel__sample">
+          Nomor di atas tercantum publik di listing sumber. LokaKos tidak memverifikasi
+          nomor pemilik secara independen.
+        </p>
+      ) : (
+        <p className="detail-panel__sample">
+          Listing sumber tidak mencantumkan nomor kontak — hubungi lewat tautan listing
+          asli di atas.
+        </p>
+      )}
     </aside>
   );
 }

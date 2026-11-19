@@ -47,15 +47,20 @@ try {
   const up = await waitFor(`http://127.0.0.1:${PORT}/`);
   if (!up) throw new Error('server statis tidak naik');
   check(`http://127.0.0.1:${PORT}/`, '/tmp/lokakos-smoke-home.html', [
+    // Beranda = explorer penuh (PR #2): panel filter + peta.
+    'Filter properti',
+    'Memuat peta',
+  ]);
+  check(`http://127.0.0.1:${PORT}/tentang/`, '/tmp/lokakos-smoke-tentang.html', [
     'Cari kos sambil lihat petanya.',
     'Memuat peta',
   ]);
   check(`http://127.0.0.1:${PORT}/peta/`, '/tmp/lokakos-smoke-peta.html', [
-    'Filter properti',
-    'Memuat peta',
+    // Rute lama /peta = halaman redirect ke / (PR #2).
+    'Peta sudah pindah ke beranda',
   ]);
   check(`http://127.0.0.1:${PORT}/favicon.svg`, '/tmp/lokakos-smoke-favicon.svg', ['<svg']);
-  console.log('smoke: OK (landing + peta + favicon dari out/)');
+  console.log('smoke: OK (beranda explorer + tentang + redirect /peta + favicon dari out/)');
 } catch (e) {
   console.error(`smoke: FAIL — ${e.message}`);
   code = 1;

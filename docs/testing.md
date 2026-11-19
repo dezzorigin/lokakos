@@ -9,7 +9,7 @@
 | `npm run validate` | `check-links.mjs` + `check-static.mjs` (tautan lokal, file wajib, sapu secret, gate P0, Mapbox bersih) |
 | `npm run sweep` | Advisory-sweep OSV batch (produksi saja; HIGH/CRITICAL = gagal) |
 | `npm test` | Playwright e2e (`e2e/smoke.spec.ts`, desktop + mobile) |
-| `npm run smoke` | Smoke folder `out/` statis (landing + peta + favicon) |
+| `npm run smoke` | Smoke folder `out/` statis (explorer + tentang + redirect /peta + favicon) |
 
 CI (`.github/workflows/ci.yml`, 6 job): build, lint, static-checks,
 advisory-sweep, playwright-e2e, smoke. Semua harus hijau sebelum merge.
@@ -34,28 +34,46 @@ npx playwright test --project=desktop
 
 ## Skenario e2e (`e2e/smoke.spec.ts`)
 
-1. Landing: hero + peta Leaflet + 8 marker karcis + 8 kartu; klik kartu →
-   `/peta?kos=…`; mobile 390px tanpa overflow horizontal.
-2. `/peta?kos=prop-003` → drawer "Kos Campur Nusa Indah" terbuka; tutup
-   drawer berfungsi.
-3. Filter `< Rp 700rb` → 3 kartu + 3 marker + judul "3 dari 8"; tambah
-   tipe Putri → 1 kartu; Reset → 8 lagi.
-4. Cari "Kopelma" → 1 kartu; hapus pencarian → 8 lagi.
-5. Klik marker → drawer; Simpan → "Tersimpan"; reload → chip Favoritku
-   menampilkan 1 kartu; Bagikan → clipboard berisi `/peta?kos=prop-…`.
-6. Pencarian tanpa hasil → empty state, 0 kartu.
+Harapan jumlah DIHITUNG dari `data/kos.json` di dalam file tes (bukan angka
+tulis tangan) — tetap benar sesudah geocode / refresh dataset.
+
+1. Beranda `/` = explorer: peta Leaflet + marker karcis (kos berkoordinat) +
+   judul "208 dari 208" + 30 kartu dulu (muat bertahap); tombol Muat lagi →
+   60 kartu; label provenance "diperbarui 2026-11-19".
+2. `/?kos=<id>` → drawer detail dengan blok sumber (nama + tautan listing
+   asli + tanggal ambil); kos bertelepon menampilkan tombol Hubungi `tel:`;
+   kos tanpa harga menampilkan "Tidak tercatat di sumber".
+3. Filter `< Rp 700rb` → 13 kartu + judul "13 dari 208"; tambah tipe Putri →
+   irisan; Reset → 30 kartu pertama dari 208.
+4. Filter area "Kopelma Darussalam" → 7 kartu; filter fasilitas WiFi → 59
+   hasil (30 kartu di halaman pertama).
+5. Cari "Kopelma" → hasil dari `data/kos.json`; hapus pencarian → 30 lagi.
+6. Klik kartu → drawer; Simpan → "Tersimpan"; reload → chip Favoritku
+   menampilkan 1 kartu; Bagikan → clipboard berisi `/?kos=k…`.
+7. Pencarian tanpa hasil → empty state, 0 kartu.
+8. `/peta/` redirect ke `/`; `/peta?kos=<id>` redirect ke `/?kos=<id>` +
+   drawer terbuka.
+9. `/tentang`: hero + peta live + 6 kartu contoh termurah; klik kartu →
+   `/?kos=…` + drawer.
+10. Mobile 390px tanpa overflow horizontal.
 
 ## Play-test manual (checklist sebelum merge)
 
-- [ ] Landing desktop: hero, peta + 8 karcis, daftar 8 kartu, stepper, fitur, footer.
-- [ ] Landing mobile 390px: tidak ada scroll horizontal, tombol ≥ 44px.
-- [ ] `/peta`: panel kiri bisa di-collapse; search memfilter; filter harga /
-      fasilitas / tipe memfilter daftar + marker bersamaan.
-- [ ] Klik marker → drawer + peta fly-to; klik kartu → sama; klik peta kosong
-      → drawer tertutup (deselect).
+- [ ] Beranda `/` desktop: panel filter + daftar 208 kos (30 dulu) + peta +
+      marker karcis + legenda status; klik kartu/marker → drawer.
+- [ ] `/tentang` desktop: hero, peta + karcis, contoh 6 kos termurah,
+      stepper, fitur, footer.
+- [ ] `/tentang` mobile 390px: tidak ada scroll horizontal, tombol ≥ 44px.
+- [ ] `/`: panel kiri bisa di-collapse; search memfilter; filter area /
+      harga / fasilitas / tipe memfilter daftar + marker bersamaan.
+- [ ] Klik marker → drawer + peta fly-to (kos berkoordinat); klik kartu →
+      sama; klik peta kosong → drawer tertutup (deselect).
+- [ ] Drawer: blok sumber (tautan listing asli) + tanggal ambil; Hubungi
+      `tel:` muncul hanya kalau sumber mencantumkan nomor.
 - [ ] Simpan favorit → hati merah; reload → favorit tetap; chip Favoritku
       memfilter.
 - [ ] Bagikan → "Tautan disalin"; buka tautan di tab baru → drawer kos itu terbuka.
+- [ ] `/peta/` redirect ke `/`; `/peta?kos=<id>` → `/?kos=<id>` + drawer.
 - [ ] "Lokasiku" → minta izin geolocation; kalau ditolak, tombol memberi tahu.
 - [ ] Matikan internet tile (atau blokir tile.openstreetmap.org) → fallback
       informatif muncul, daftar tetap jalan.

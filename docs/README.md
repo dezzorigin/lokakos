@@ -7,7 +7,7 @@ di `PLANNER.md`; proposal bisnis di `proposals/`.
 |---|---|
 | [DESIGN.md](DESIGN.md) | Kontrak arah desain (palet, tipografi, layout, detail khas, larangan P0) — ditulis sebelum coding |
 | [architecture.md](architecture.md) | Arsitektur: stack, struktur folder, alur state, keputusan teknis (Leaflet vs Mapbox, static export) |
-| [data.md](data.md) | Data contoh: 8 kos, skema tipe, aturan filter, favorit |
+| [data.md](data.md) | Dataset jujur: 208 kos, sumber + cara kumpul, skema tipe, aturan filter, favorit |
 | [deploy.md](deploy.md) | Deploy Cloudflare Pages + nama proyek + verifikasi live |
 | [testing.md](testing.md) | Cara menjalankan tes + play-test manual |
 | [diagrams.html](diagrams.html) | Diagram arsitektur + alur pengguna (HTML + SVG, bukan Mermaid) |

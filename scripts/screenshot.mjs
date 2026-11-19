@@ -1,4 +1,4 @@
-// Screenshot dokumentasi: adegan landing + /peta (desktop + mobile) ke
+// Screenshot dokumentasi: adegan tentang + explorer / (desktop + mobile) ke
 // docs/screenshots/*.png — dipakai README + video demo.
 // Prasyarat: puppeteer-core, Chromium di cache
 // (~/.cache/ms-playwright/chromium-1234), forwarder 127.0.0.1:18081 hidup,
@@ -55,19 +55,20 @@ const waitMap = async (page) => {
 const shots = [
   {
     file: '01-landing-desktop.png',
-    url: `${BASE}/`,
+    url: `${BASE}/tentang`,
     viewport: { width: 1440, height: 900 },
     setup: waitMap,
   },
   {
     file: '02-peta-desktop.png',
-    url: `${BASE}/peta`,
+    url: `${BASE}/`,
     viewport: { width: 1440, height: 900 },
     setup: waitMap,
   },
   {
     file: '03-peta-detail-desktop.png',
-    url: `${BASE}/peta?kos=prop-001`,
+    // k132 Kost Nafa 14 — satu-satunya kos berfoto di dataset (PR #2).
+    url: `${BASE}/?kos=k132`,
     viewport: { width: 1440, height: 900 },
     setup: async (page) => {
       await waitMap(page);
@@ -77,13 +78,14 @@ const shots = [
   },
   {
     file: '04-landing-mobile.png',
-    url: `${BASE}/`,
+    url: `${BASE}/tentang`,
     viewport: { width: 390, height: 844, isMobile: true },
     setup: waitMap,
   },
   {
     file: '05-peta-mobile.png',
-    url: `${BASE}/peta?kos=prop-006`,
+    // k012 CENDANA KOS — harga + nomor kontak (PR #2).
+    url: `${BASE}/?kos=k012`,
     viewport: { width: 390, height: 844, isMobile: true },
     setup: async (page) => {
       await waitMap(page);

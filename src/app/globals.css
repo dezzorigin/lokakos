@@ -502,7 +502,14 @@ input { font-family: inherit; }
     position: absolute; left: 0; bottom: 0; top: auto; z-index: 560;
     width: 100%; height: 46%; border-right: none; border-top: 1px solid var(--line-strong);
     box-shadow: 0 -8px 24px rgba(30, 58, 52, 0.16); background: var(--paper);
+    /* PR #2: panel filter lebih tinggi (dropdown area + petunjuk) — kalau
+       daftar tetap scroll internal dengan tinggi ~0, kartu tidak pernah
+       terlihat di sheet 46%. Jadi di mobile SELURUH panel yang scroll
+       (filter -> daftar -> tombol muat), bukan daftar saja. */
+    overflow-y: auto;
   }
+  .property-list { flex: none; }
+  .property-list__scroll { flex: none; overflow-y: visible; }
   .left-panel--collapsed { width: 100%; height: 0; opacity: 0; }
   .left-panel-toggle { display: none; }
   .map-legend { display: none; }
@@ -515,3 +522,50 @@ input { font-family: inherit; }
   .hero__map { min-height: 340px; }
   .navbar__cta { display: none; }
 }
+
+/* ═══════════ PR #2 — dataset jujur ═══════════ */
+
+/* Karcis tanpa harga: kertas netral + garis putus-putus, bukan kunyit. */
+.price-ticket--noprice { background: var(--paper-deep); color: var(--ash); border: 1px dashed var(--line-strong); }
+.price-ticket--noprice .price-ticket__hole { background: var(--paper); border-color: var(--line-strong); }
+
+/* Dropdown area di FilterPanel — selaras dengan chip filter. */
+.filter-area-select {
+  flex: 1; min-width: 0; min-height: 44px; padding: 8px 12px;
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--card); border: 1px solid var(--line-strong); border-radius: 8px;
+}
+.filter-group__hint { font-size: 12px; color: var(--ash); margin-top: 4px; flex-basis: 100%; }
+
+/* Tombol muat bertahap di bawah daftar. */
+.property-list__load-more {
+  display: block; width: 100%; margin: 12px 0 4px; min-height: 48px;
+  background: var(--card); color: var(--ink); border: 1px solid var(--line-strong);
+  border-radius: 8px; font-size: 14px; font-weight: 700;
+}
+.property-list__load-more:hover { border-color: var(--ink); }
+
+/* Harga kosong di kartu — teks sekunder, bukan angka. */
+.property-card__price-label--none { font-size: 13px; color: var(--ash); font-weight: 600; }
+
+/* Foto hotlink dari listing sumber di drawer detail. */
+.detail-panel__photo { position: relative; }
+.detail-panel__photo img { width: 100%; height: 220px; object-fit: cover; background: var(--paper-deep); }
+.detail-panel__photo-note {
+  position: absolute; left: 12px; bottom: 10px; font-size: 11px; font-weight: 700;
+  color: var(--ink); background: rgba(250, 246, 238, 0.92); border-radius: 999px; padding: 3px 10px;
+}
+.detail-panel__price--none { font-size: 20px; }
+
+/* Blok sumber di drawer detail. */
+.detail-panel__source { border-top: 1px solid var(--line); margin-top: 16px; padding-bottom: 4px; }
+.detail-panel__source-link { display: inline-block; margin-top: 8px; font-size: 14px; font-weight: 700; }
+.detail-panel__accuracy { font-size: 12px; color: var(--ash); margin-top: 8px; }
+.detail-panel__cta--second { padding-top: 0; }
+
+/* Catatan kecil di bawah legenda peta. */
+.map-legend__note { font-size: 11px; color: var(--ash); margin-top: 8px; max-width: 200px; }
+
+/* Halaman redirect /peta -> /. */
+.peta-redirect { max-width: 640px; margin: 0 auto; padding: 80px 20px; text-align: center; }
+.peta-redirect p { color: var(--ink-soft); margin-bottom: 12px; }

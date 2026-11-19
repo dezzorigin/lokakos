@@ -5,7 +5,8 @@
 Next.js 16 (App Router) + React 19 + Tailwind v4, **static export**
 (`output: 'export'`) ke Cloudflare Pages. Tanpa backend, tanpa database,
 tanpa API key. Peta: Leaflet + tile standar OpenStreetMap.
-Data: 8 kos contoh di `src/lib/mockData.ts`. State: React lokal +
+Data: 208 kos nyata dari listing publik di `data/kos.json` (PR #2, opsi B),
+di-load lewat `src/lib/kosData.ts`. State: React lokal +
 localStorage (favorit).
 
 ## Stack
@@ -49,14 +50,19 @@ dihapus dari tree ada di badan PR.
 
 `output: 'export'` menghasilkan `out/` statis yang di-upload langsung ke
 Cloudflare Pages (direct upload, `cf_pages.py`). Tidak ada Route Handler,
-tidak ada SSR dinamis. `useSearchParams` di `/peta` dibungkus `<Suspense>`
-(syarat Next 16 untuk route prerender).
+tidak ada SSR dinamis. `useSearchParams` di `/` dibungkus `<Suspense>`
+(syarat Next 16 untuk route prerender). `redirects` di `next.config` TIDAK
+didukung static export — karena itu rute lama `/peta` redirect ke `/` lewat
+komponen klien (`router.replace`), bukan lewat config.
 
 ### 3. Dua rute, satu komponen peta
 
-- `/` — landing: hero editorial + **peta live** (MapContainer yang sama).
-  Klik karcis harga → `/peta?kos=<id>`.
-- `/peta` — aplikasi penuh: panel kiri (filter + daftar) + peta + drawer detail.
+- `/` — explorer penuh: panel kiri (filter + daftar) + peta + drawer detail.
+  Buka situs langsung masuk daftar lengkap 208 kos.
+- `/tentang` — landing: hero editorial + **peta live** (MapContainer yang sama).
+  Klik karcis harga → `/?kos=<id>`.
+- `/peta` — redirect klien ke `/` (deep-link `?kos=` ikut terbawa), supaya
+  tautan lama tetap jalan.
 
 `MapContainer` membungkus `MapView` (Leaflet, `dynamic ssr:false`) dan menjaga
 satu API: `properties`, `selectedPropertyId`, `onPropertySelect`,
@@ -68,12 +74,13 @@ satu API: `properties`, `selectedPropertyId`, `onPropertySelect`,
 src/
 ├── app/
 │   ├── layout.tsx        # Font Fraunces + Public Sans, metadata, favicon.svg
-│   ├── page.tsx          # Landing (hero + peta live + daftar + fitur + footer)
-│   ├── peta/page.tsx     # Aplikasi peta penuh (+ Suspense untuk ?kos=)
+│   ├── page.tsx          # Explorer penuh (filter + daftar 208 kos + peta + drawer)
+│   ├── tentang/page.tsx  # Landing (hero + peta live + contoh 6 kos + fitur)
+│   ├── peta/page.tsx     # Redirect klien /peta -> / (?kos= ikut terbawa)
 │   ├── not-found.tsx
 │   └── globals.css       # SELURUH design system (token + semua komponen)
 ├── components/
-│   ├── layout/Navbar.tsx       # Brand + nav + logo GitHub + CTA Buka Peta
+│   ├── layout/Navbar.tsx       # Brand + nav + logo GitHub + CTA Buka Daftar Kos
 │   ├── layout/FilterPanel.tsx  # Chip filter (controlled)
 │   ├── map/MapContainer.tsx    # Wrapper dynamic ssr:false
 │   ├── map/MapView.tsx         # Leaflet: tile, marker karcis, fly-to, lokasiku
@@ -85,7 +92,8 @@ src/
 ├── hooks/useMap.ts       # viewState + selectedProperty
 ├── lib/
 │   ├── map/config.ts     # Tile URL, center, zoom, bounds Banda Aceh
-│   ├── mockData.ts       # 8 kos contoh + format harga + statistik
+│   ├── kosData.ts        # Dataset jujur: data/kos.json -> Property[] + AREAS + statistik
+│   ├── format.ts         # Format harga IDR (pendek + lengkap + periode)
 │   ├── property.ts       # Status kamar (satu definisi) + label gender
 │   ├── filter.ts         # FilterState + applyFilters (satu sumber kebenaran)
 │   └── favorites.ts      # Favorit di localStorage
@@ -95,17 +103,17 @@ src/
 ## Alur state
 
 ```
-MOCK_PROPERTIES (8 kos contoh)
+KOS_PROPERTIES (208 kos nyata, data/kos.json)
       │
-      ├─ FilterState { price, facilities, type, favoritesOnly, query }
+      ├─ FilterState { price, facilities, type, area, favoritesOnly, query }
       │     └─ applyFilters() ──> filtered (daftar + marker peta)
       │
       ├─ klik kartu / marker ──> selectProperty(p) ──> drawer detail
-      │     └─ MapView flyTo(p) saat dipilih dari daftar
+      │     └─ MapView flyTo(p) saat dipilih dari daftar (kalau berkoordinat)
       │
       ├─ ♥ favorit ──> useFavorites() ──> localStorage 'lokakos:favorites:v1'
       │
-      └─ Bagikan ──> clipboard: {origin}/peta?kos=<id>
+      └─ Bagikan ──> clipboard: {origin}/?kos=<id>
             └─ buka tautan ──> ?kos= ──> drawer langsung terbuka
 ```
 
@@ -120,7 +128,7 @@ memfilter apa pun.
 Browser ──> out/ statis (Cloudflare Pages)
    ├─ tile: tile.openstreetmap.org (OSM)
    ├─ font: self-hosted (next/font, di-bundle saat build)
-   └─ data: MOCK_PROPERTIES (di-bundle di JS, tanpa fetch)
+   └─ data: KOS_PROPERTIES (data/kos.json, di-bundle di JS, tanpa fetch)
 ```
 
 Tidak ada request ke backend LokaKos sama sekali. Satu-satunya jaringan
@@ -128,9 +136,13 @@ runtime: tile peta (+ atribusi) dan — kalau ada — tidak ada lagi.
 
 ## Batas yang diketahui
 
-- Data contoh (8 kos) — belum ada backend/Supabase. Jalur migrasi: ganti
-  `MOCK_PROPERTIES` dengan fetch ke API, bentuk `Property` tetap sama.
-- Pencarian memfilter nama/alamat/deskripsi data lokal — bukan geocoding.
+- Dataset 208 kos dari listing publik 19 Nov 2026 — harga/kontak bisa
+  berubah; drawer menampilkan sumber + tanggal ambil + tautan listing asli.
+  Cara refresh: `scripts/collect/` (lihat `docs/data.md`).
+- 119 dari 208 kos tanpa harga di sumber; kos tanpa koordinat tidak tampil
+  di peta (tetap ada di daftar). Status kamar semua "tidak diketahui" —
+  sumber tidak memberi info ketersediaan yang bisa diverifikasi.
+- Pencarian memfilter nama/alamat/area data lokal — bukan geocoding.
 - "Lokasiku" butuh izin geolocation browser; kalau ditolak, tombol memberi tahu.
 - Tile butuh internet; kalau tile gagal total, peta menampilkan fallback
   informatif (bukan abu-abu kosong), daftar tetap jalan.

@@ -3,10 +3,14 @@
 /**
  * src/components/layout/FilterPanel.tsx
  *
- * Panel filter — CONTROLLED. State tinggal di halaman (/peta), chip di sini
+ * Panel filter — CONTROLLED. State tinggal di halaman (/), chip di sini
  * hanya memanggil onChange. Filter yang sama dipakai daftar + marker peta
  * (satu sumber kebenaran: src/lib/filter.ts). Sebelum restructure, chip
  * hanya mengubah state lokal dan tidak memfilter apa pun.
+ *
+ * Chip fasilitas mengikuti kosakata yang BENAR-BENAR ADA di dataset
+ * (WiFi, AC, K. Mandi Dalam, Kasur, Kloset Duduk, Akses 24 Jam) — bukan
+ * daftar khayalan. Area berupa dropdown dari AREAS (kosData).
  */
 
 import { EMPTY_FILTERS, hasActiveFilters, type FilterState } from '@/lib/filter';
@@ -21,9 +25,9 @@ const FACILITY_OPTIONS = [
   { label: 'WiFi', value: 'wifi' },
   { label: 'AC', value: 'ac' },
   { label: 'KM Dalam', value: 'private_bath' },
-  { label: 'Parkir', value: 'parking' },
-  { label: 'Laundry', value: 'laundry' },
-  { label: 'Dapur', value: 'kitchen' },
+  { label: 'Kasur', value: 'bed' },
+  { label: 'Kloset Duduk', value: 'toilet' },
+  { label: 'Akses 24 Jam', value: 'access24' },
 ] as const;
 
 const TYPE_OPTIONS = [
@@ -35,9 +39,11 @@ const TYPE_OPTIONS = [
 export interface FilterPanelProps {
   value: FilterState;
   onChange: (next: FilterState) => void;
+  /** Daftar area dari dataset (urut terbanyak) — untuk dropdown area. */
+  areas: string[];
 }
 
-export default function FilterPanel({ value, onChange }: FilterPanelProps) {
+export default function FilterPanel({ value, onChange, areas }: FilterPanelProps) {
   const toggleFacility = (v: string) => {
     const next = value.facilities.includes(v)
       ? value.facilities.filter((x) => x !== v)
@@ -47,6 +53,28 @@ export default function FilterPanel({ value, onChange }: FilterPanelProps) {
 
   return (
     <div className="filter-panel" role="search" aria-label="Filter properti">
+      <div className="filter-group">
+        <span className="filter-group__label" id="filter-area-label">
+          Area
+        </span>
+        <select
+          id="filter-area"
+          className="filter-area-select"
+          aria-labelledby="filter-area-label"
+          value={value.area ?? ''}
+          onChange={(e) =>
+            onChange({ ...value, area: e.target.value === '' ? null : e.target.value })
+          }
+        >
+          <option value="">Semua area</option>
+          {areas.map((area) => (
+            <option key={area} value={area}>
+              {area}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="filter-group">
         <span className="filter-group__label" id="filter-harga-label">
           Harga
@@ -67,6 +95,9 @@ export default function FilterPanel({ value, onChange }: FilterPanelProps) {
             </button>
           ))}
         </div>
+        <p className="filter-group__hint">
+          Filter harga hanya berlaku untuk kos ber-harga bulanan yang tercantum.
+        </p>
       </div>
 
       <div className="filter-group">
