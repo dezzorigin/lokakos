@@ -31,7 +31,7 @@ import {
   TILE_ATTRIBUTION,
   TILE_URL,
 } from '@/lib/map/config';
-import { formatPriceShort } from '@/lib/mockData';
+import { formatPriceShort } from '@/lib/format';
 import { getOverallStatus, STATUS_CONFIG } from '@/lib/property';
 import type { Property } from '@/types/property';
 
@@ -45,15 +45,23 @@ export interface MapViewProps {
 }
 
 // ─── Ikon karcis harga ────────────────────────────────────────────────────────
+// Kos tanpa harga di sumber: karcis netral bertanda '?' — jujur, bukan
+// harga karangan. Kos tanpa koordinat tidak punya marker sama sekali.
 function ticketIcon(property: Property, isSelected: boolean): L.DivIcon {
   const status = getOverallStatus(property);
   const color = STATUS_CONFIG[status].color;
-  const label = formatPriceShort(property.priceMin);
+  const hasPrice = property.priceMin != null;
+  // Harga tahunan ditandai '/thn' — karcis '10Jt' tanpa penanda akan dibaca
+  // sebagai harga bulanan (SB House 10jt/tahun, Cempaka 4–7,5jt/tahun).
+  const label = hasPrice
+    ? formatPriceShort(property.priceMin as number) +
+      (property.pricePeriod === 'yearly' ? '/thn' : '')
+    : '?';
   return L.divIcon({
     className: 'price-ticket-wrap',
     html:
-      `<span class="price-ticket${isSelected ? ' price-ticket--selected' : ''}" ` +
-      `title="${property.name.replace(/"/g, '&quot;')}">` +
+      `<span class="price-ticket${isSelected ? ' price-ticket--selected' : ''}${hasPrice ? '' : ' price-ticket--noprice'}" ` +
+      `title="${property.name.replace(/"/g, '&quot;')}${hasPrice ? '' : ' — harga tidak tercatat di sumber'}">` +
       `<span class="price-ticket__hole" aria-hidden="true"></span>` +
       `<span>${label}</span>` +
       `<span class="price-ticket__dot" style="background:${color}" aria-hidden="true"></span>` +
@@ -68,7 +76,12 @@ function FlyToSelected({ property }: { property: Property | null }) {
   const map = useMap();
   const prevId = useRef<string | null>(null);
   useEffect(() => {
-    if (property && property.id !== prevId.current) {
+    if (
+      property &&
+      property.id !== prevId.current &&
+      property.latitude != null &&
+      property.longitude != null
+    ) {
       prevId.current = property.id;
       map.flyTo([property.latitude, property.longitude], Math.max(map.getZoom(), 16), {
         duration: 0.8,
@@ -171,19 +184,23 @@ export default function MapView({
           }}
         />
         <ZoomControl position="topright" />
-        {properties.map((property) => (
-          <Marker
-            key={property.id}
-            position={[property.latitude, property.longitude]}
-            icon={ticketIcon(property, property.id === selectedPropertyId)}
-            eventHandlers={{
-              click: () => {
-                if (onMarkerNavigate) onMarkerNavigate(property);
-                else onPropertySelect?.(property);
-              },
-            }}
-          />
-        ))}
+        {/* Hanya kos berkoordinat yang jadi marker — kos tanpa koordinat
+            tetap ada di daftar, tidak dipaksakan ke peta. */}
+        {properties
+          .filter((p) => p.latitude != null && p.longitude != null)
+          .map((property) => (
+            <Marker
+              key={property.id}
+              position={[property.latitude as number, property.longitude as number]}
+              icon={ticketIcon(property, property.id === selectedPropertyId)}
+              eventHandlers={{
+                click: () => {
+                  if (onMarkerNavigate) onMarkerNavigate(property);
+                  else onPropertySelect?.(property);
+                },
+              }}
+            />
+          ))}
         <FlyToSelected property={selected} />
         {interactive && <LocateButton />}
       </LeafletMap>

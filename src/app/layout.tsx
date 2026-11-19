@@ -20,6 +20,33 @@ export const metadata: Metadata = {
     'Marketplace kos map-first untuk Darussalam, Banda Aceh. Lihat lokasi, harga, dan ketersediaan kamar langsung di peta OpenStreetMap — tanpa daftar, tanpa iklan.',
   keywords: ['kos', 'kosan', 'Banda Aceh', 'Darussalam', 'Unsyiah', 'sewa kamar', 'Kopelma'],
   icons: { icon: '/favicon.svg' },
+  // Kartu preview saat tautan ditempel (preferensi Nabil 19 Nov 2026):
+  // gambar preview = screenshot ASLI situs ini (public/og.png, dari
+  // docs/screenshots/02-peta-desktop.png), bukan placeholder.
+  openGraph: {
+    title: 'LokaKos — Temukan Kos di Banda Aceh',
+    description:
+      '208 kos nyata Banda Aceh di peta — harga, sumber listing, dan kontak langsung dari daftar.',
+    url: 'https://lokakos.pages.dev',
+    siteName: 'LokaKos',
+    locale: 'id_ID',
+    type: 'website',
+    images: [
+      {
+        url: 'https://lokakos.pages.dev/og.png',
+        width: 1440,
+        height: 900,
+        alt: 'Daftar 208 kos Banda Aceh di peta LokaKos',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'LokaKos — Temukan Kos di Banda Aceh',
+    description:
+      '208 kos nyata Banda Aceh di peta — harga, sumber listing, dan kontak langsung dari daftar.',
+    images: ['https://lokakos.pages.dev/og.png'],
+  },
 };
 
 export default function RootLayout({

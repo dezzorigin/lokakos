@@ -1,222 +1,180 @@
 'use client';
 
 /**
- * src/app/page.tsx — Landing LokaKos.
+ * src/app/page.tsx — Beranda LokaKos: explorer penuh (PR #2, opsi B).
  *
- * Struktur (referensi pemenang: Marren & Co, Framer): hero editorial kiri +
- * peta hidup kanan, lalu stepper cara kerja, daftar kos, strip fitur, footer.
- * Peta di hero adalah peta BENERAN (MapContainer yang sama dengan /peta):
- * klik karcis harga -> buka kos itu di /peta. Semua angka dihitung dari
- * MOCK_PROPERTIES — tanpa statistik vanity.
+ * Sejak PR #2, `/` LANGSUNG membuka daftar lengkap 208 kos + peta — tanpa
+ * landing page yang harus di-scroll dulu. Landing lama pindah ke /tentang.
+ *
+ * Layout split (warisan PLANNER.md): panel kiri (FilterPanel + PropertyList)
+ * + peta kanan (MapContainer Leaflet) + drawer detail.
+ * Deep-link: /?kos=<id> langsung membuka detail kos itu.
+ *
+ * Catatan Next.js 16: useSearchParams hanya boleh dipakai di dalam
+ * <Suspense> pada route yang di-prerender — lihat docs Next
+ * (node_modules/next/dist/docs/.../use-search-params.md). Supaya seluruh
+ * halaman tidak ikut tertunda client-render, pembaca param dipisah ke
+ * komponen kecil <DeepLinkOpener> di dalam <Suspense>; FilterPanel, daftar,
+ * dan peta tetap ter-render di HTML statis.
  */
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
+import FilterPanel from '@/components/layout/FilterPanel';
+import PropertyList from '@/components/property/PropertyList';
+import PropertyDetail from '@/components/property/PropertyDetail';
+import MapSearchBar from '@/components/map/MapSearchBar';
 import MapContainer from '@/components/map/MapContainer';
-import PropertyCard from '@/components/property/PropertyCard';
-import { MOCK_PROPERTIES, formatPrice, totalAvailableRooms } from '@/lib/mockData';
+import { AREAS, KOS_PROPERTIES } from '@/lib/kosData';
+import { applyFilters, EMPTY_FILTERS, type FilterState } from '@/lib/filter';
 import { useFavorites } from '@/lib/favorites';
+import { useMap } from '@/hooks/useMap';
 
-const MIN_PRICE = Math.min(...MOCK_PROPERTIES.map((p) => p.priceMin));
-const AVAILABLE_ROOMS = totalAvailableRooms(MOCK_PROPERTIES);
+/** Pembaca ?kos= — satu-satunya komponen yang memakai useSearchParams. */
+function DeepLinkOpener({ onOpen }: { onOpen: (id: string) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const id = searchParams.get('kos');
+    if (id) onOpen(id);
+  }, [searchParams, onOpen]);
+  return null;
+}
 
-const FEATURES = [
-  {
-    title: 'Peta yang tidak butuh kunci API',
-    body: 'Tile OpenStreetMap via Leaflet — tidak ada token, tidak ada tagihan, peta tetap jalan di halaman live.',
-  },
-  {
-    title: 'Filter yang benar-benar menyaring',
-    body: 'Harga, fasilitas, dan tipe kos memfilter daftar dan marker peta sekaligus. Bukan chip pajangan.',
-  },
-  {
-    title: 'Favorit tersimpan di perangkatmu',
-    body: 'Ketuk hati di kartu mana pun; daftar favoritmu tetap ada saat kembali, tanpa akun dan tanpa daftar.',
-  },
-  {
-    title: 'Bagikan tautan satu kos',
-    body: 'Setiap kos punya tautan /peta?kos=… — yang menerima langsung melihat detail kos itu, bukan beranda.',
-  },
-];
-
-export default function HomePage() {
-  const router = useRouter();
+function ExplorerContent() {
+  const { selectedProperty, selectProperty } = useMap();
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
+  const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const { favorites, toggle, isFavorite } = useFavorites();
 
-  const openInMap = (id: string) => router.push(`/peta?kos=${id}`);
+  const filtered = useMemo(
+    () => applyFilters(KOS_PROPERTIES, filters, favorites),
+    [filters, favorites],
+  );
+
+  // Deep-link ?kos=<id> -> buka detail kos itu.
+  const openById = useCallback(
+    (id: string) => {
+      const found = KOS_PROPERTIES.find((p) => p.id === id);
+      if (found) selectProperty(found);
+    },
+    [selectProperty],
+  );
+
+  // Kos terpilih ikut terfilter keluar -> tutup drawer-nya.
+  useEffect(() => {
+    if (selectedProperty && !filtered.some((p) => p.id === selectedProperty.id)) {
+      selectProperty(null);
+    }
+  }, [filtered, selectedProperty, selectProperty]);
 
   return (
-    <div className="landing">
-      <Navbar />
+    <div className="page-layout">
+      <Suspense fallback={null}>
+        <DeepLinkOpener onOpen={openById} />
+      </Suspense>
+      <Navbar compact />
+      <div className="page-content">
+        <aside
+          className={`left-panel${isLeftPanelOpen ? '' : ' left-panel--collapsed'}`}
+          aria-label="Panel properti"
+        >
+          <FilterPanel value={filters} onChange={setFilters} areas={AREAS} />
+          <PropertyList
+            properties={filtered}
+            totalCount={KOS_PROPERTIES.length}
+            selectedPropertyId={selectedProperty?.id ?? null}
+            isLoading={false}
+            isFavorite={isFavorite}
+            onFavoriteToggle={(p) => toggle(p.id)}
+            onPropertySelect={selectProperty}
+          />
+        </aside>
 
-      <main>
-        {/* ── Hero: editorial kiri, peta hidup kanan ── */}
-        <div className="landing__wrap">
-          <section className="hero" aria-label="Perkenalan LokaKos">
-            <div>
-              <span className="hero__eyebrow">Peta kos · Darussalam, Banda Aceh</span>
-              <h1>Cari kos sambil lihat petanya.</h1>
-              <p className="hero__sub">
-                LokaKos menaruh peta di depan: tiap karcis kuning di peta adalah satu kos
-                di sekitar Unsyiah, lengkap dengan harga dan status kamarnya. Klik, bandingkan,
-                simpan yang cocok.
-              </p>
-              <div className="hero__actions">
-                <Link className="btn btn--primary" href="/peta">
-                  Buka Peta
-                </Link>
-                <Link className="btn btn--ghost" href="#daftar">
-                  Lihat Daftar Kos
-                </Link>
-              </div>
-              <div className="hero__stats" aria-label="Ringkasan data">
-                <div className="hero__stat">
-                  <div className="hero__stat-num num">{MOCK_PROPERTIES.length}</div>
-                  <div className="hero__stat-label">kos contoh</div>
-                </div>
-                <div className="hero__stat">
-                  <div className="hero__stat-num num">{formatPrice(MIN_PRICE)}</div>
-                  <div className="hero__stat-label">harga mulai /bln</div>
-                </div>
-                <div className="hero__stat">
-                  <div className="hero__stat-num num">{AVAILABLE_ROOMS}</div>
-                  <div className="hero__stat-label">kamar tersedia</div>
-                </div>
-              </div>
-              <p className="hero__sample-note">
-                Angka di atas dihitung dari data contoh di aplikasi — bukan klaim pengguna
-                atau properti sungguhan.
-              </p>
-            </div>
+        <button
+          id="toggle-left-panel-btn"
+          type="button"
+          className="left-panel-toggle"
+          onClick={() => setIsLeftPanelOpen((v) => !v)}
+          aria-label={isLeftPanelOpen ? 'Sembunyikan panel' : 'Tampilkan panel'}
+          title={isLeftPanelOpen ? 'Sembunyikan panel' : 'Tampilkan panel'}
+          style={{ left: isLeftPanelOpen ? '360px' : '8px' }}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+            style={{
+              transform: isLeftPanelOpen ? 'rotate(0deg)' : 'rotate(180deg)',
+              transition: 'transform 200ms ease',
+            }}
+          >
+            <path
+              d="M10 12L6 8L10 4"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
 
-            <div className="hero__map" role="region" aria-label="Peta kos Darussalam">
-              <MapContainer
-                properties={MOCK_PROPERTIES}
-                onMarkerNavigate={(p) => openInMap(p.id)}
-              />
-              <div className="hero__map-caption">
-                <span className="dot" aria-hidden="true" />
-                Peta live — klik karcis harga untuk membuka kos di peta penuh
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {/* ── Cara kerja: stepper, bukan 3 kartu ── */}
-        <div className="landing__wrap">
-          <section className="steps" id="cara-kerja" aria-label="Cara kerja">
-            <h2 className="steps__title">Dari peta sampai kos yang cocok</h2>
-            <p className="steps__intro">
-              Tiga langkah, semuanya di satu layar peta. Tidak ada formulir, tidak ada akun.
-            </p>
-            <ol className="steps__list">
-              <li className="steps__item">
-                <span className="steps__num">Langkah 1</span>
-                <h3>Lihat peta</h3>
-                <p>
-                  Karcis kuning menunjukkan harga mulai tiap kos. Warna titiknya memberi tahu
-                  status kamar: hijau tersedia, kuning hampir penuh, merah penuh.
-                </p>
-              </li>
-              <li className="steps__item">
-                <span className="steps__num">Langkah 2</span>
-                <h3>Saring yang cocok</h3>
-                <p>
-                  Pilih rentang harga, fasilitas, dan tipe kos — putra, putri, atau campur.
-                  Daftar dan peta menyaring bersamaan.
-                </p>
-              </li>
-              <li className="steps__item">
-                <span className="steps__num">Langkah 3</span>
-                <h3>Simpan dan bagikan</h3>
-                <p>
-                  Simpan kos incaran ke favorit, lalu bagikan tautannya ke teman sekamar.
-                  Tautan itu membuka langsung detail kosnya.
-                </p>
-              </li>
-            </ol>
-          </section>
-        </div>
-
-        {/* ── Daftar kos ── */}
-        <div className="landing__wrap">
-          <section className="listing" id="daftar" aria-label="Daftar kos">
-            <div className="listing__head">
-              <h2>Kos di sekitar Unsyiah</h2>
-              <p>
-                {MOCK_PROPERTIES.length} kos contoh di Darussalam dan Kopelma — klik kartu
-                untuk membukanya di peta.
-              </p>
-            </div>
-            <div className="listing__grid">
-              {MOCK_PROPERTIES.map((property) => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  isFavorite={isFavorite(property.id)}
-                  onFavoriteToggle={(p) => toggle(p.id)}
-                  onClick={(p) => openInMap(p.id)}
-                />
-              ))}
-            </div>
-            <div className="listing__more">
-              <Link className="btn btn--kunyit" href="/peta">
-                Buka semuanya di peta
-              </Link>
-            </div>
-            <p className="hero__sample-note">
-              Favorit tersimpan di perangkat ini ({favorites.size} tersimpan sekarang).
-            </p>
-          </section>
-        </div>
-
-        {/* ── Fitur ── */}
-        <div className="landing__wrap">
-          <section className="features" aria-label="Fitur">
-            <h2>Kenapa peta dulu, daftar kemudian</h2>
-            <ul className="features__list">
-              {FEATURES.map((f) => (
-                <li className="features__item" key={f.title}>
-                  <span className="features__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                  <div>
-                    <h3>{f.title}</h3>
-                    <p>{f.body}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-      </main>
-
-      <footer className="footer">
-        <div className="landing__wrap">
-          <div className="footer__row">
-            <span className="navbar__wordmark">LokaKos</span>
-            <span>Temukan kos di Banda Aceh — langsung di peta.</span>
-            <span className="footer__links">
-              <Link href="/peta">Peta</Link>
-              <Link href="/#daftar">Daftar Kos</Link>
-              <a
-                href="https://github.com/dezzorigin/lokakos"
-                target="_blank"
-                rel="noreferrer"
-              >
-                GitHub
-              </a>
-            </span>
+        <main className="map-area" role="main" aria-label="Peta properti kos">
+          <div className="map-searchbar-wrap">
+            <MapSearchBar
+              value={filters.query}
+              onChange={(q) => setFilters((f) => ({ ...f, query: q }))}
+            />
           </div>
-          <div className="footer__row" style={{ marginTop: 8 }}>
-            <span>© 2026 LokaKos · Data kos di situs ini adalah data contoh.</span>
-            <span>Peta © OpenStreetMap contributors.</span>
+
+          <MapContainer
+            properties={filtered}
+            selectedPropertyId={selectedProperty?.id ?? null}
+            onPropertySelect={selectProperty}
+          />
+
+          <div className="map-legend" aria-label="Keterangan marker">
+            <span className="map-legend__title">Status Kamar</span>
+            <div className="map-legend__items">
+              <span className="map-legend__item">
+                <span className="map-legend__dot" style={{ background: '#236147' }} />
+                Tersedia
+              </span>
+              <span className="map-legend__item">
+                <span className="map-legend__dot" style={{ background: '#E9B44C' }} />
+                Hampir Penuh
+              </span>
+              <span className="map-legend__item">
+                <span className="map-legend__dot" style={{ background: '#9A3B20' }} />
+                Penuh
+              </span>
+              <span className="map-legend__item">
+                <span className="map-legend__dot" style={{ background: '#55584F' }} />
+                Tidak diketahui
+              </span>
+            </div>
+            <p className="map-legend__note">
+              Status “tidak diketahui” berarti listing sumber tidak memberi info
+              ketersediaan kamar.
+            </p>
           </div>
-        </div>
-      </footer>
+
+          {selectedProperty && (
+            <PropertyDetail
+              property={selectedProperty}
+              isFavorite={isFavorite(selectedProperty.id)}
+              onFavoriteToggle={(p) => toggle(p.id)}
+              onClose={() => selectProperty(null)}
+            />
+          )}
+        </main>
+      </div>
     </div>
   );
+}
+
+export default function HomePage() {
+  return <ExplorerContent />;
 }

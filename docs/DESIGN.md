@@ -5,10 +5,15 @@
 
 ## 1. Produk & pengguna
 
-LokaKos — marketplace kos-kosan **map-first** untuk area Darussalam / Kopelma,
-Banda Aceh (sekitar Unsyiah). Pengguna: mahasiswa baru & perantau yang cari kos
-dari jauh — mereka butuh **lihat lokasi dulu, harga dulu, status kamar dulu**,
-bukan baca brosur. Peta adalah produknya; daftar kos adalah pendampingnya.
+LokaKos — marketplace kos-kosan **map-first** untuk Banda Aceh (sekitar
+Unsyiah: Darussalam / Kopelma, Lamnyong, Peunayong, Ulee Kareng, dan
+sekitarnya). Pengguna: mahasiswa baru & perantau yang cari kos dari jauh —
+mereka butuh **lihat lokasi dulu, harga dulu, status kamar dulu**, bukan baca
+brosur. Peta adalah produknya; daftar kos adalah pendampingnya.
+
+Sejak PR #2, beranda (`/`) LANGSUNG membuka explorer penuh: daftar 208 kos
+nyata + peta. Landing (hero editorial + peta hidup) pindah ke `/tentang`.
+Rute lama `/peta` redirect ke `/`.
 
 ## 2. Referensi (2–3 kandidat, 1 pemenang)
 
@@ -52,8 +57,9 @@ sama seperti Daun untuk "Tersedia".
 
 ## 5. Layout (satu kalimat) + detail khas
 
-**Satu kalimat:** "Hero editorial di kiri, peta hidup di kanan; di `/peta`,
-daftar kos menempel di kiri seperti papan pengumuman di atas peta OSM."
+**Satu kalimat:** "Di `/`, daftar kos menempel di kiri seperti papan
+pengumuman di atas peta OSM; di `/tentang`, hero editorial di kiri, peta
+hidup di kanan."
 
 **Detail khas (signature):** marker harga berbentuk **karcis kos** — pil
 kuning kunyit bertepi putus-putus dengan satu lubang perforasi — dan kartu kos
@@ -80,11 +86,15 @@ untuk drawer), grid 8pt, padding kartu ≥ 16px.
 - [ ] Tanpa Inter / Roboto / system font untuk semuanya (Fraunces + Public Sans)
 - [ ] Tanpa hero tengah + 3 kartu identik (hero asimetris kiri-kanan; "cara kerja" berupa stepper bernomor, bukan 3 kartu)
 - [ ] Tanpa emoji mentah sebagai ikon fungsi (SVG 1.5–2px; ♂/♀/⚥ hanya sebagai penanda teks tipe kos, bukan ikon fungsi)
-- [ ] Tanpa statistik vanity palsu — semua angka dihitung dari `MOCK_PROPERTIES` (8 kos, harga min–max, total kamar tersedia) dan berlabel "data contoh"
+- [ ] Tanpa statistik vanity palsu — semua angka dihitung dari `KOS_PROPERTIES`
+      (208 kos, harga min bulanan, jumlah kos bertelepon) dan berlabel sumber +
+      tanggal ambil ("data listing publik, diperbarui 2026-11-19")
 - [ ] Tanpa tema Tailwind mentah, tanpa `rounded-2xl shadow-lg` di semua permukaan
 - [ ] Tanpa footer 4 kolom default (footer satu baris + satu baris link)
 - [ ] Tanpa copy generik ("Elevate your workflow" dkk) — copy Bahasa Indonesia spesifik kos
-- [ ] Tanpa tombol/link mati: Masuk/Daftar dihapus (tidak ada auth); CTA yang ada = Buka Peta, Simpan (favorit, localStorage), Bagikan (salin tautan `?kos=`), Hubungi Pemilik **dihapus** (tidak ada nomor pemilik di data contoh — diganti Simpan + Bagikan yang benar-benar jalan)
+- [ ] Tanpa tombol/link mati: Masuk/Daftar dihapus (tidak ada auth); CTA yang ada = Buka Daftar Kos,
+      Simpan (favorit, localStorage), Bagikan (salin tautan `?kos=`), Hubungi (tel:, hanya muncul
+      kalau sumber mencantumkan nomor publik — nomor relay platform tidak dipakai)
 - [ ] Mobile 390px: tanpa overflow horizontal, target sentuh ≥ 44px, panel kiri jadi sheet bawah
 - [ ] Kontras teks lolos AA (dihitung dengan script, bukan kira-kira — semua
       pasangan teks/latar ≥ 4.5:1; warna status memakai varian teks gelap,

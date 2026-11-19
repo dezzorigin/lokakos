@@ -4,15 +4,14 @@
  * src/components/property/PropertyCard.tsx
  *
  * Kartu properti di daftar. Tepi kiri putus-putus kunyit = "sobekan papan
- * pengumuman" (detail khas, lihat docs/DESIGN.md). Tanpa thumbnail palsu:
- * data contoh tidak punya foto, jadi tidak ada kotak gambar abu-abu dengan
- * emoji rumah — nama + status + harga yang bicara.
+ * pengumuman" (detail khas, lihat docs/DESIGN.md). Kos tanpa harga di sumber
+ * menampilkan "Harga tidak tercatat di sumber" — bukan harga karangan.
  * Tombol hati = favorit (localStorage), stopPropagation supaya tidak ikut
  * membuka detail.
  */
 
 import type { Property } from '@/types/property';
-import { formatPrice } from '@/lib/mockData';
+import { formatPrice, pricePeriodLabel } from '@/lib/format';
 import { GENDER_LABELS, getOverallStatus, STATUS_CONFIG } from '@/lib/property';
 
 export interface PropertyCardProps {
@@ -101,9 +100,19 @@ export default function PropertyCard({
           )}
         </div>
         <div className="property-card__price-row">
-          <span className="property-card__price-label">Mulai</span>
-          <span className="property-card__price num">{formatPrice(property.priceMin)}</span>
-          <span className="property-card__price-unit">/bln</span>
+          {property.priceMin != null ? (
+            <>
+              <span className="property-card__price-label">Mulai</span>
+              <span className="property-card__price num">{formatPrice(property.priceMin)}</span>
+              <span className="property-card__price-unit">
+                {pricePeriodLabel(property.pricePeriod)}
+              </span>
+            </>
+          ) : (
+            <span className="property-card__price-label property-card__price-label--none">
+              Harga tidak tercatat di sumber
+            </span>
+          )}
         </div>
       </div>
     </article>

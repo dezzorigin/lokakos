@@ -8,8 +8,9 @@
  *
  * ATURAN WAJIB (PLANNER.md §6): harus 'use client' karena menggunakan React hooks.
  *
- * Catatan Phase 1: Menggunakan mock data (MOCK_PROPERTIES).
- * Di Phase 3, selectedProperty dapat diisi dari data Supabase.
+ * Catatan: sejak PR #2 data berasal dari `data/kos.json` (208 kos nyata,
+ * lihat `src/lib/kosData.ts`), bukan mock lagi. `selectedProperty` dapat
+ * diisi dari data mana pun yang berbentuk `Property`.
  */
 
 import { useState, useCallback } from 'react';

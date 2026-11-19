@@ -32,12 +32,13 @@ Pola P1 yang sudah terbukti di repo #19–#32: direct upload via API
 
 ## Verifikasi live (wajib sebelum merge)
 
-1. `curl` homepage → HTTP 200, berisi `Cari kos sambil lihat petanya.`
-2. `curl` `/peta/` → HTTP 200, berisi `Filter properti`.
-3. Buka di browser (atau headless): peta Leaflet ter-render, 8 marker karcis
-   harga muncul, klik marker membuka drawer detail.
-4. Filter harga `< Rp 700rb` → 3 kartu + 3 marker.
-5. Deep-link `/peta?kos=prop-003` → drawer "Kos Campur Nusa Indah" terbuka.
+1. `curl` homepage `/` → HTTP 200, berisi `Filter properti` (beranda = explorer).
+2. `curl` `/tentang/` → HTTP 200, berisi `Cari kos sambil lihat petanya.`
+3. `curl` `/peta/` → HTTP 200, berisi `Peta sudah pindah ke beranda` (redirect klien).
+4. Buka di browser (atau headless): peta Leaflet ter-render, marker karcis
+   harga muncul untuk kos berkoordinat, klik marker membuka drawer detail.
+5. Filter harga `< Rp 700rb` → 13 kartu.
+6. Deep-link `/?kos=k132` → drawer "Kost Nafa 14" terbuka (dengan foto).
 
 Catatan: tile peta dimuat dari `tile.openstreetmap.org` saat runtime — kalau
 jaringan pemverifikasi memblokir host itu, peta menampilkan fallback

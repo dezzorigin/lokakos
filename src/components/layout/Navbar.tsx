@@ -5,8 +5,8 @@
  *
  * Navbar LokaKos. Tidak ada tombol Masuk / Daftar — tidak ada auth di
  * aplikasi ini, dan tombol yang tidak ke mana-mana adalah cacat produk.
- * Yang ada: navigasi nyata (anchor + rute /peta), logo GitHub di kanan
- * yang menaut ke repo, dan CTA "Buka Peta".
+ * Yang ada: navigasi nyata (rute / dan /tentang), logo GitHub di kanan
+ * yang menaut ke repo, dan CTA "Buka Daftar Kos".
  */
 
 import Link from 'next/link';
@@ -49,14 +49,14 @@ export default function Navbar({ compact = false }: { compact?: boolean }) {
         <span className="navbar__wordmark">LokaKos</span>
       </Link>
       <nav className="navbar__nav" aria-label="Navigasi utama">
-        <Link className="navbar__link" href="/#daftar">
+        <Link className="navbar__link" href="/">
           Daftar Kos
         </Link>
-        <Link className="navbar__link" href="/#cara-kerja">
-          Cara Kerja
+        <Link className="navbar__link" href="/tentang">
+          Tentang
         </Link>
-        <Link className="navbar__link" href="/peta">
-          Peta
+        <Link className="navbar__link" href="/tentang#cara-kerja">
+          Cara Kerja
         </Link>
       </nav>
       <span className="navbar__spacer" />
@@ -70,8 +70,8 @@ export default function Navbar({ compact = false }: { compact?: boolean }) {
         <GithubMark />
         <span>GitHub</span>
       </a>
-      <Link className="navbar__cta" href="/peta">
-        Buka Peta
+      <Link className="navbar__cta" href="/">
+        Buka Daftar Kos
       </Link>
     </header>
   );
