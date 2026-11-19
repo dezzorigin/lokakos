@@ -136,7 +136,7 @@ function PetaContent() {
             <span className="map-legend__title">Status Kamar</span>
             <div className="map-legend__items">
               <span className="map-legend__item">
-                <span className="map-legend__dot" style={{ background: '#2E7D5B' }} />
+                <span className="map-legend__dot" style={{ background: '#236147' }} />
                 Tersedia
               </span>
               <span className="map-legend__item">
@@ -144,7 +144,7 @@ function PetaContent() {
                 Hampir Penuh
               </span>
               <span className="map-legend__item">
-                <span className="map-legend__dot" style={{ background: '#C0563B' }} />
+                <span className="map-legend__dot" style={{ background: '#9A3B20' }} />
                 Penuh
               </span>
             </div>

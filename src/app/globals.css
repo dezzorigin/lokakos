@@ -20,8 +20,10 @@
   --leaf-soft: #e3f0e8;
   --kunyit: #e9b44c;
   --kunyit-deep: #c98f1f;
+  --kunyit-text: #7a5e10; /* teks kecil di atas kertas — AA 5.67 (kunyit-deep hanya 2.62) */
   --kunyit-soft: #fbf3d9;
   --bata: #c0563b;
+  --bata-text: #9a3b20; /* teks kecil — AA 5.85 (bata hanya 3.81 di atas bata-soft) */
   --bata-soft: #f9e8e2;
   --ash: #6e7268;
   --line: #e3dccb;
@@ -190,7 +192,7 @@ input { font-family: inherit; }
 .steps__item + .steps__item { padding-left: 24px; border-left: 1px dashed var(--line-strong); }
 .steps__num {
   font-family: var(--font-display); font-size: 15px; font-weight: 700;
-  color: var(--kunyit-deep); letter-spacing: 0.04em;
+  color: var(--kunyit-text); letter-spacing: 0.04em;
 }
 .steps__item h3 { font-size: 19px; margin: 8px 0 6px; }
 .steps__item p { font-size: 14px; color: var(--ink-soft); max-width: 34ch; }
@@ -367,7 +369,7 @@ input { font-family: inherit; }
 .filter-chip--active:hover { background: var(--ink); color: var(--kunyit); }
 .filter-reset-btn {
   align-self: flex-start; padding: 4px 12px; border-radius: 999px;
-  font-size: 12px; font-weight: 700; color: var(--bata);
+  font-size: 12px; font-weight: 700; color: var(--bata-text);
   background: var(--bata-soft); border: 1.5px solid #eccfc6; min-height: 32px;
 }
 .filter-reset-btn:hover { border-color: var(--bata); }
@@ -380,8 +382,8 @@ input { font-family: inherit; }
 .property-list__subtitle { font-size: 12px; color: var(--ash); margin-top: 2px; }
 .property-list__sample {
   display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 700;
-  color: var(--kunyit-deep); background: var(--kunyit-soft);
-  border: 1px dashed var(--kunyit-deep); border-radius: 6px; padding: 3px 8px;
+  color: var(--kunyit-text); background: var(--kunyit-soft);
+  border: 1px dashed var(--kunyit-text); border-radius: 6px; padding: 3px 8px;
 }
 .property-list__scroll {
   flex: 1; overflow-y: auto; padding: 4px 12px 12px;

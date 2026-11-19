@@ -32,8 +32,8 @@ bahasa Indonesia, data contoh berlabel jujur.
 | Kertas Peta | `#FAF6EE` | Background utama — kertas peta tua, bukan putih klinik |
 | Tinta Darussalam | `#1E3A34` | Teks utama, navbar, marker terpilih — hijau-tinta hutan |
 | Daun Kopelma | `#2E7D5B` | CTA utama + status "Tersedia" |
-| Kunyit | `#E9B44C` | Aksen: marker harga (karcis), sorot, hover aktif |
-| Bata | `#C0563B` | **Hanya semantik status** "Penuh" + bahaya — bukan warna tema |
+| Kunyit | `#E9B44C` | Aksen: marker harga (karcis), sorot, hover aktif — varian teks `#7A5E10` untuk teks kecil (AA 5.67; `#C98F1F` hanya 2.62, dekorasi saja) |
+| Bata | `#C0563B` | **Hanya semantik status** "Penuh" + bahaya — bukan warna tema; varian teks `#9A3B20` (AA 5.85) |
 | Abu Jalan | `#6E7268` | Teks sekunder, label, garis halus |
 
 Catatan anti-klise: Bata bukan pasangan tema Kertas (krim + terracotta sebagai
@@ -86,4 +86,6 @@ untuk drawer), grid 8pt, padding kartu ≥ 16px.
 - [ ] Tanpa copy generik ("Elevate your workflow" dkk) — copy Bahasa Indonesia spesifik kos
 - [ ] Tanpa tombol/link mati: Masuk/Daftar dihapus (tidak ada auth); CTA yang ada = Buka Peta, Simpan (favorit, localStorage), Bagikan (salin tautan `?kos=`), Hubungi Pemilik **dihapus** (tidak ada nomor pemilik di data contoh — diganti Simpan + Bagikan yang benar-benar jalan)
 - [ ] Mobile 390px: tanpa overflow horizontal, target sentuh ≥ 44px, panel kiri jadi sheet bawah
-- [ ] Kontras AA, `prefers-reduced-motion` dihormati, focus-visible di semua kontrol
+- [ ] Kontras teks lolos AA (dihitung dengan script, bukan kira-kira — semua
+      pasangan teks/latar ≥ 4.5:1; warna status memakai varian teks gelap,
+      bukan warna tema mentah)

@@ -46,6 +46,9 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   kontrol zoom (ditemukan saat play-test e2e).
 - Kartu kos di panel daftar mengecil terpotong (flex-shrink di kolom scroll
   flex) — kartu tidak lagi menyusut (ditemukan saat review screenshot).
+- Kontras teks di bawah AA: angka langkah (`#C98F1F`, 2.62), teks badge status
+  (Tersedia 4.26, Hampir Penuh 4.42, Penuh 3.81), tombol Reset Filter (3.81) —
+  semua diganti varian teks gelap yang dihitung lolos AA (5.51–6.23).
 
 ### Removed
 - `lokakos/app_backup_root/` (duplikat usang `src/app`).

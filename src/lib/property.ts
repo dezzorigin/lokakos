@@ -11,9 +11,12 @@ export const STATUS_CONFIG: Record<
   RoomStatus,
   { label: string; color: string; bg: string }
 > = {
-  available: { label: 'Tersedia', color: '#2E7D5B', bg: '#E3F0E8' },
-  almost_full: { label: 'Hampir Penuh', color: '#8A6D1B', bg: '#FBF3D9' },
-  full: { label: 'Penuh', color: '#C0563B', bg: '#F9E8E2' },
+  // Warna TEKS digelapkan dari warna tema supaya kontras lolos WCAG AA
+  // (dihitung: Tersedia 6.23, Hampir Penuh 5.51, Penuh 5.85 di atas bg-nya).
+  // Titik/dot marker memakai warna yang sama — konsisten di seluruh UI.
+  available: { label: 'Tersedia', color: '#236147', bg: '#E3F0E8' },
+  almost_full: { label: 'Hampir Penuh', color: '#7A5E10', bg: '#FBF3D9' },
+  full: { label: 'Penuh', color: '#9A3B20', bg: '#F9E8E2' },
 };
 
 export const GENDER_LABELS: Record<string, { label: string; mark: string }> = {
