@@ -1,48 +1,84 @@
-# Lokakos
+# LokaKos — Cari kos sambil lihat petanya
 
-Lokakos — project oleh Nabil Aulia Dika (dezzorigin).
+Marketplace kos-kosan **map-first** untuk Darussalam / Kopelma, Banda Aceh
+(sekitar Unsyiah). Peta di depan, daftar di samping: tiap karcis kuning di
+peta adalah satu kos, lengkap dengan harga mulai dan status kamarnya.
 
-## Status Proyek
+**Live:** https://lokakos.pages.dev
 
-**Dalam pengembangan** _(README ada)_
+![Landing LokaKos — hero + peta live](docs/screenshots/01-landing-desktop.png)
+![Peta penuh dengan drawer detail](docs/screenshots/03-peta-detail-desktop.png)
 
-## 📋 Tech Stack
+> **Data contoh.** Semua kos di situs ini adalah data contoh untuk demo —
+> nama, harga, dan ketersediaan kamar bukan listing sungguhan.
 
-Next.js
+## Yang bisa dilakukan
 
-## 🏗️ Arsitektur
+- **Lihat peta** — 8 kos contoh di sekitar Unsyiah sebagai karcis harga di
+  peta OpenStreetMap (Leaflet, tanpa API key). Warna titik = status kamar:
+  hijau tersedia, kuning hampir penuh, merah penuh.
+- **Saring yang cocok** — harga, fasilitas, tipe kos (putra / putri / campur),
+  dan kata kunci. Daftar dan marker peta tersaring bersamaan.
+- **Buka detail kos** — klik karcis atau kartu: deskripsi, fasilitas, tipe
+  kamar + sisa kamar, harga per bulan.
+- **Simpan favorit** — ketuk hati; tersimpan di perangkatmu (localStorage),
+  tanpa akun.
+- **Bagikan tautan kos** — setiap kos punya tautan `/peta?kos=…`; yang
+  menerima langsung melihat detail kos itu.
+- **Lokasiku** — tombol di peta menerbangkan peta ke posisimu (izin browser).
 
-```mermaid
-flowchart LR
-  U[Pengguna] --> B[Browser]
-  B --> F[Frontend (React/Next.js)]
-  F --> A[API Routes]
-  A --> D[(Database)]
-```
+📹 **Video demo:** [docs/demo/demo.mp4](docs/demo/demo.mp4) (5 adegan × 5 detik)
 
-## 📁 Struktur Proyek
-
-```
-file /
-lokakos/
-LICENSE
-PRD.md
-README.md
-```
-
-## 🚀 Getting Started
+## Cara jalan
 
 ```bash
-# Install dependencies
 npm install
-
-# Jalankan development server
-npm run dev
+npm run dev        # http://localhost:3000
 ```
 
-> Untuk project HTML/Python/Go, lihat instruksi di atas atau file konfigurasi.
+Tidak butuh API key, tidak butuh `.env` — peta memakai tile OpenStreetMap
+gratis. (Mapbox sudah dihapus dari codebase; lihat
+[docs/architecture.md](docs/architecture.md) untuk alasannya.)
 
-## 📄 Lisensi
+```bash
+npm run build      # static export -> out/ (yang di-deploy ke Cloudflare Pages)
+npm test           # Playwright e2e (butuh server di :8331, lihat docs/testing.md)
+npm run validate   # tautan + secret + gate anti-slop P0 + Mapbox bersih
+npm run sweep      # advisory-sweep OSV (produksi saja)
+npm run screenshots # docs/screenshots/*.png
+npm run make-video  # docs/demo/demo.mp4
+```
+
+Butuh Node ≥ 22.
+
+## Tech stack
+
+Next.js 16 (App Router, static export) · React 19 · TypeScript · Tailwind v4 ·
+Leaflet + react-leaflet (tile OpenStreetMap) · Playwright.
+
+## Struktur
+
+```
+src/app/            # / (landing) · /peta (aplikasi penuh) · not-found
+src/components/     # layout (Navbar, FilterPanel) · map (MapView, MapContainer, MapSearchBar)
+                    # property (PropertyCard, PropertyDetail, PropertyList)
+src/lib/            # mockData (8 kos contoh) · filter · favorites · property · map/config
+docs/               # DESIGN.md · architecture.md · data.md · deploy.md · testing.md
+                    # diagrams.html · screenshots/ · demo/ · proposals/
+```
+
+## Dokumentasi
+
+- [PRD](PRD.md) — kebutuhan produk
+- [docs/DESIGN.md](docs/DESIGN.md) — kontrak arah desain (referensi: Marren & Co, Framer)
+- [docs/architecture.md](docs/architecture.md) — arsitektur + keputusan teknis
+- [docs/data.md](docs/data.md) — data contoh + aturan filter
+- [docs/deploy.md](docs/deploy.md) — deploy Cloudflare Pages
+- [docs/testing.md](docs/testing.md) — cara tes + play-test manual
+- [docs/diagrams.html](docs/diagrams.html) — diagram arsitektur + alur pengguna
+- [docs/PLANNER.md](docs/PLANNER.md) — arsip memory bank MVP awal
+
+## Lisensi
 
 MIT — lihat [LICENSE](./LICENSE).
 

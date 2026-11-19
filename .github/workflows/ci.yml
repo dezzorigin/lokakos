@@ -1,0 +1,147 @@
+name: CI
+
+# CI untuk LOKAKOS (repo #33 — Next.js map-first, Leaflet + OSM).
+# Variasi sesuai stack: build statis (output: export) + typecheck + lint,
+# Playwright e2e terhadap hasil build statis, advisory-sweep OSV,
+# pemeriksaan statis (tautan + secret + gate anti-slop P0 + Mapbox bersih),
+# dan smoke folder out/ (persis yang di-deploy ke Cloudflare Pages).
+# Node 24 (html-validate tidak dipakai di sini; engines.node >= 22 tetap
+# dikunci di package.json mengikuti pola repo #29).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Build statis + typecheck ──────────────────────────────────────────
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build (static export -> out/)
+        run: npm run build
+
+      - name: Pastikan out/ berisi landing + peta
+        run: |
+          test -f out/index.html
+          test -f out/peta/index.html
+          test -f out/favicon.svg
+
+  # ── Lint ──────────────────────────────────────────────────────────────
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+  # ── Pemeriksaan statis ────────────────────────────────────────────────
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Tautan + secret + gate P0 + Mapbox bersih
+        run: npm run validate
+
+  # ── Advisory sweep (OSV batch, tanpa auth) ────────────────────────────
+  # Pola repo #24–#32: 1 POST ke api.osv.dev/v1/querybatch untuk semua
+  # paket produksi. JANGAN ganti ke GitHub Advisory DB API + GITHUB_TOKEN
+  # (gagal deterministik 401 di CI orteam — token per-job bermasalah).
+  advisory-sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: OSV sweep (produksi saja, HIGH/CRITICAL = gagal)
+        run: python3 scripts/advisory-sweep.py
+
+  # ── Playwright e2e terhadap hasil build statis ────────────────────────
+  playwright-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium (hanya di CI — JANGAN di VM dev)
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      - name: Sajikan out/ + jalankan e2e
+        run: |
+          npx --yes serve out -l 8331 &
+          SRV=$!
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://127.0.0.1:8331/ && break
+            sleep 1
+          done
+          BASE_URL=http://127.0.0.1:8331 npx playwright test --project=desktop
+          kill $SRV
+
+  # ── Smoke folder out/ ─────────────────────────────────────────────────
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build + smoke out/
+        run: |
+          npm run build
+          npm run smoke

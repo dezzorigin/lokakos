@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagram LokaKos — Arsitektur &amp; Alur Pengguna</title>
+<style>
+  :root {
+    --paper: #faf6ee; --ink: #1e3a34; --leaf: #2e7d5b;
+    --kunyit: #e9b44c; --ash: #6e7268; --line: #e3dccb; --card: #fff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif; }
+  main { max-width: 960px; margin: 0 auto; padding: 40px 20px 64px; }
+  .kicker { font: 700 12px/1.4 system-ui, sans-serif; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--leaf); }
+  h1 { font-size: 34px; margin: 8px 0 6px; }
+  .lede { font: 15px/1.6 system-ui, sans-serif; color: var(--ash); max-width: 62ch; }
+  h2 { font-size: 24px; margin: 48px 0 4px; }
+  .sub { font: 14px/1.6 system-ui, sans-serif; color: var(--ash); margin: 0 0 16px; }
+  figure { margin: 0; background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; padding: 20px; }
+  figcaption { font: 13px/1.5 system-ui, sans-serif; color: var(--ash); margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  .box { fill: #fff; stroke: var(--ink); stroke-width: 1.5; }
+  .box-leaf { fill: #e3f0e8; stroke: var(--leaf); stroke-width: 1.5; }
+  .box-kunyit { fill: #fbf3d9; stroke: #c98f1f; stroke-width: 1.5; }
+  .lbl { font: 700 13px system-ui, sans-serif; fill: var(--ink); }
+  .small { font: 11px/1.4 system-ui, sans-serif; fill: var(--ash); }
+  .arrow { stroke: var(--ink); stroke-width: 1.5; fill: none; marker-end: url(#ah); }
+  .arrow-leaf { stroke: var(--leaf); stroke-width: 1.5; fill: none; marker-end: url(#ah); }
+  .num { font: 700 15px Georgia, serif; fill: var(--leaf); }
+</style>
+</head>
+<body>
+<main>
+  <p class="kicker">LokaKos · Diagram</p>
+  <h1>Arsitektur &amp; alur pengguna</h1>
+  <p class="lede">Dua diagram editorial (HTML + SVG). Bukan Mermaid — sesuai standar
+  dokumentasi P1 (diagram-design). Data: 8 kos contoh, tanpa backend.</p>
+
+  <h2>1 · Arsitektur runtime</h2>
+  <p class="sub">Situs statis. Satu-satunya jaringan runtime di luar Pages adalah tile peta.</p>
+  <figure>
+    <svg viewBox="0 0 880 340" role="img" aria-label="Diagram arsitektur LokaKos">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0L10 5L0 10z" fill="#1e3a34"></path>
+        </marker>
+      </defs>
+      <rect class="box" x="20" y="120" width="150" height="100" rx="10"></rect>
+      <text class="lbl" x="95" y="158" text-anchor="middle">Pengguna</text>
+      <text class="small" x="95" y="180" text-anchor="middle">browser · mahasiswa</text>
+      <text class="small" x="95" y="198" text-anchor="middle">cari kos di Banda Aceh</text>
+
+      <rect class="box-leaf" x="250" y="40" width="220" height="260" rx="10"></rect>
+      <text class="lbl" x="360" y="70" text-anchor="middle">Cloudflare Pages</text>
+      <text class="small" x="360" y="92" text-anchor="middle">lokakos.pages.dev · out/ statis</text>
+      <rect class="box" x="270" y="115" width="180" height="56" rx="8"></rect>
+      <text class="lbl" x="360" y="138" text-anchor="middle">/ landing</text>
+      <text class="small" x="360" y="156" text-anchor="middle">hero + peta live + daftar</text>
+      <rect class="box" x="270" y="185" width="180" height="56" rx="8"></rect>
+      <text class="lbl" x="360" y="208" text-anchor="middle">/peta</text>
+      <text class="small" x="360" y="226" text-anchor="middle">filter + daftar + drawer</text>
+      <rect class="box-kunyit" x="270" y="255" width="180" height="30" rx="8"></rect>
+      <text class="small" x="360" y="274" text-anchor="middle">MOCK_PROPERTIES (8 kos)</text>
+
+      <rect class="box" x="550" y="120" width="150" height="100" rx="10"></rect>
+      <text class="lbl" x="625" y="158" text-anchor="middle">Leaflet</text>
+      <text class="small" x="625" y="180" text-anchor="middle">marker karcis harga</text>
+      <text class="small" x="625" y="198" text-anchor="middle">fly-to · lokasiku</text>
+
+      <rect class="box" x="730" y="120" width="130" height="100" rx="10"></rect>
+      <text class="lbl" x="795" y="158" text-anchor="middle">CARTO / OSM</text>
+      <text class="small" x="795" y="180" text-anchor="middle">tile Positron</text>
+      <text class="small" x="795" y="198" text-anchor="middle">tanpa API key</text>
+
+      <line class="arrow" x1="170" y1="170" x2="248" y2="170"></line>
+      <line class="arrow" x1="470" y1="150" x2="548" y2="150"></line>
+      <line class="arrow" x1="700" y1="170" x2="728" y2="170"></line>
+      <line class="arrow-leaf" x1="360" y1="255" x2="625" y2="222"></line>
+      <text class="small" x="480" y="245" text-anchor="middle">data contoh di-bundle</text>
+    </svg>
+    <figcaption>Gambar 1 — Browser memuat situs statis dari Cloudflare Pages.
+    Peta Leaflet mengambil tile dari CARTO (data OpenStreetMap). Data kos
+    ikut ter-bundle di JavaScript; tidak ada request ke backend LokaKos.</figcaption>
+  </figure>
+
+  <h2>2 · Alur pengguna: dari peta sampai kos yang cocok</h2>
+  <p class="sub">Tiga langkah, semuanya di satu layar peta. Tanpa akun, tanpa formulir.</p>
+  <figure>
+    <svg viewBox="0 0 880 220" role="img" aria-label="Diagram alur pengguna LokaKos">
+      <defs>
+        <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0L10 5L0 10z" fill="#1e3a34"></path>
+        </marker>
+      </defs>
+      <circle cx="60" cy="60" r="26" fill="#fbf3d9" stroke="#c98f1f" stroke-width="1.5"></circle>
+      <text class="num" x="60" y="66" text-anchor="middle">1</text>
+      <text class="lbl" x="60" y="110" text-anchor="middle">Lihat peta</text>
+      <text class="small" x="60" y="130" text-anchor="middle">karcis kuning =</text>
+      <text class="small" x="60" y="146" text-anchor="middle">harga mulai tiap kos</text>
+
+      <circle cx="300" cy="60" r="26" fill="#fbf3d9" stroke="#c98f1f" stroke-width="1.5"></circle>
+      <text class="num" x="300" y="66" text-anchor="middle">2</text>
+      <text class="lbl" x="300" y="110" text-anchor="middle">Saring yang cocok</text>
+      <text class="small" x="300" y="130" text-anchor="middle">harga · fasilitas · tipe</text>
+      <text class="small" x="300" y="146" text-anchor="middle">daftar + marker ikut</text>
+
+      <circle cx="540" cy="60" r="26" fill="#fbf3d9" stroke="#c98f1f" stroke-width="1.5"></circle>
+      <text class="num" x="540" y="66" text-anchor="middle">3</text>
+      <text class="lbl" x="540" y="110" text-anchor="middle">Buka detail kos</text>
+      <text class="small" x="540" y="130" text-anchor="middle">klik karcis / kartu</text>
+      <text class="small" x="540" y="146" text-anchor="middle">kamar · fasilitas · harga</text>
+
+      <circle cx="780" cy="60" r="26" fill="#e3f0e8" stroke="#2e7d5b" stroke-width="1.5"></circle>
+      <text class="num" x="780" y="66" text-anchor="middle">4</text>
+      <text class="lbl" x="780" y="110" text-anchor="middle">Simpan &amp; bagikan</text>
+      <text class="small" x="780" y="130" text-anchor="middle">favorit lokal · tautan</text>
+      <text class="small" x="780" y="146" text-anchor="middle">/peta?kos=…</text>
+
+      <line class="arrow" x1="88" y1="60" x2="272" y2="60" marker-end="url(#ah2)"></line>
+      <line class="arrow" x1="328" y1="60" x2="512" y2="60" marker-end="url(#ah2)"></line>
+      <line class="arrow" x1="568" y1="60" x2="752" y2="60" marker-end="url(#ah2)"></line>
+      <path class="arrow-leaf" d="M 780 88 C 780 190, 60 190, 60 96" marker-end="url(#ah2)"></path>
+      <text class="small" x="420" y="200" text-anchor="middle">tautan bagikan kembali ke langkah 3 — penerima langsung melihat detail kos itu</text>
+    </svg>
+    <figcaption>Gambar 2 — Alur utama. Filter di langkah 2 menyaring daftar dan
+    marker peta secara bersamaan (satu fungsi <code>applyFilters</code>).
+    Favorit tersimpan di localStorage; tautan bagikan memakai deep-link
+    <code>?kos=</code>.</figcaption>
+  </figure>
+</main>
+</body>
+</html>
